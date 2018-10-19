@@ -1,0 +1,37 @@
+.icon {
+    display: block;
+    background-size: cover;
+}
+
+.icon-moscow {
+    background-image: url("../images/star-icon.png");
+    width: 12px;
+    height: 12px;
+}
+
+.icon-spb {
+    background-image: url("../images/anchor-icon.png");
+    width: 11px;
+    height: 12px;
+}
+
+.icon-twitter {
+    background-image: url("../images/twitter-icon.png");
+    width: 40px;
+    height: 27px;
+}
+.icon-facebook {
+    background-image: url("../images/facebook-icon.png");
+    width: 13px;
+    height: 27px;
+}
+.icon-google {
+    background-image: url("../images/google-icon.png");
+    width: 19px;
+    height: 27px;
+}
+.icon-vimeo {
+    background-image: url("../images/vimeo-icon.png");
+    width: 32px;
+    height: 27px;
+}
