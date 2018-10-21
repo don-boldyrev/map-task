@@ -32,9 +32,17 @@ export default {
     filters: {
         nameHtml: function (value) {
             const valueParts = value.split(' (')
-            const resultStr =   '<span class="fist-name">' + valueParts[0] + '<span>' +
+            let resultStr = ''
+            if (valueParts.length === 2) {
+                resultStr =   '<span class="fist-name">' + valueParts[0] + '<span>' +
                                 '<br>' + 
                                 '<span class="second-name">(' + valueParts[1] + '<span>'
+            } else {
+                resultStr =   '<span class="fist-name">' + valueParts[0] + '<span>' +
+                                '<br>' + 
+                                '<span class="second-name">(Англ. название отсутствует)<span>'
+            }
+            
             return resultStr
         }
     }
