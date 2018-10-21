@@ -2,32 +2,71 @@
     <div id="main-map"></div>
 </template>
 <script>
+import _ from 'underscore'
+import Vue from 'vue'
 import ymaps from 'ymaps'
 import markerImg from '@/assets/images/marker-image.png'
+import stationMarkerImg from '@/assets/images/station-marker-icon.png'
+import ChartBaloon from '@/components/ChartBaloon'
+const defaulChartBarColor = '#f87979'
 export default {
     name: 'CustomMap',
-    props: ['center'],
+    props: ['options'],
     data () {
         return {
             myMap: null,
             placemarks: [],
-            zoom: 15,
-            defaultCenter: [55.754782, 37.620624]
+            defaultCenter: [55.754782, 37.620624],
+            defaultZoom: 15,
+            chartData: {
+                labels: [],
+                datasets: [
+                    {
+                        backgroundColor: defaulChartBarColor,
+                        data: []
+                    }
+                ]
+            },
+            chartOptions: {
+                responsive: true, 
+                maintainAspectRatio: false,
+                legend: {
+                    display: false,
+                },
+                scales: {
+                    xAxes: [{
+                        ticks: {
+                            display: false
+                        }
+                    }]
+                }
+            },
+            isOpenBallon: false
         }
     },
     computed: {
         placemarksObjs () {
             return this.$store.getters.places
+        },
+        stationmarksObjs () {
+            return this.$store.getters.stations
         }
     },
     mounted () {
         ymaps.load().then(maps => {
-            const center = this.center ? this.center : this.defaultCenter
+            const center = this.options.center ? this.options.center : this.defaultCenter
+            const zoom = this.options.zoom !== null ? this.options.zoom: this.defaultZoom
             this.myMap = new maps.Map('main-map', {
                 center: center,
-                zoom: this.zoom,
+                zoom: zoom,
                 type: 'yandex#hybrid',
                 controls: []
+            })
+            this.myMap.events.add('sizechange', ()=>{
+                const context = this
+                _.debounce(function () {
+                   context.rerenderBaloon()
+                }, 300)()
             })
             const getCustomIcon = (cityIconClassName) => {
 
@@ -75,35 +114,101 @@ export default {
                     }
                 ))
             })
-            
+            this.stationmarksObjs.forEach(obj => {
+                const balloonHtml = maps.templateLayoutFactory.createClass('<div id="balloonTpl" class="custom-balloon-tpl"></div>')
+                const placemark = new maps.Placemark(
+                    [ +obj.lat, +obj.lng ],
+                    {
+                        balloonContent: ''
+                    },
+                    { 
+                        iconLayout: 'default#image',
+                        balloonContentLayout: balloonHtml,
+                        iconImageHref: stationMarkerImg,
+                        iconImageSize: [29, 35]
+                    }
+                )
+                placemark.events.add('balloonopen', () => {
+                    this.chartData = {
+                        labels: this.$store.getters.getDynamicById(obj.id).labels,
+                        datasets: [
+                            {
+                                backgroundColor: defaulChartBarColor,
+                                data: this.$store.getters.getDynamicById(obj.id).data
+                            }
+                        ]
+                    }
+                    this.mountBaloon()
+                    this.isOpenBallon = true
+                })
+                placemark.events.add('balloonclose', () => {
+                    this.isOpenBallon = false
+                })
+
+                this.placemarks.push(placemark)
+            })
             this.initPlaceMarks ()
         })
-       
     },
     methods: {
         initPlaceMarks () {
             this.placemarks.forEach((placemark) => {
                 this.myMap.geoObjects.add(placemark)
             })
+        },
+        mountBaloon () {
+            const balloonTpl = document.getElementById('balloonTpl')
+            const chartInstance = new Vue({ 
+                ...ChartBaloon,
+                propsData: { 
+                    chartData: this.chartData,
+                    options: this.chartOptions,
+                    styles: {   
+                        height: '100%',
+                        width: '100%',
+                        position: 'relative'
+                    }
+                }
+            })
+            chartInstance.$mount(balloonTpl)
+        },
+        rerenderBaloon () {
+            setTimeout(() => {
+                const balloonTpl = document.getElementById('balloonTpl')
+                if (balloonTpl && this.isOpenBallon) {
+                    this.mountBaloon ()
+                }
+            }, 200)
         }
     },
     watch: { 
-        center: function(newVal) {
-            this.myMap.panTo(newVal, {
+        options: function(newVal) {
+            const center = newVal.center ? newVal.center : this.defaultCenter
+            this.myMap.panTo(center, {
                 checkZoomRange: true,
                 duration: 1000
             })
+            .then(() => {
+                if (newVal.zoom !== null && newVal.zoom !== undefined) {
+                    this.myMap.setZoom(newVal.zoom)
+                }
+            })
         }
+    },
+    components: {
+        ChartBaloon
     }
 }
 </script>
 <style>
+/****/
 #main-map {
     width: 100%;
     height: 100%;
 }
-@media (max-width: 768px) {
-    height: 50%;
+.custom-balloon-tpl {
+    width: 300px;
+    height: 200px;
 }
 .custom-placemark-tpl {
     width: 120px;

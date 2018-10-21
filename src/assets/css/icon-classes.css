@@ -35,3 +35,8 @@
     width: 32px;
     height: 27px;
 }
+.icon-subway {
+    background-image: url("../images/public-transport-subway.svg");
+    width: 9px;
+    height: 10px;
+}

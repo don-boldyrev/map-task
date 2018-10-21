@@ -1,3 +1,17 @@
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+.clearfix:after {
+    display: block;
+    content: "";
+    clear: both;
+}
+.inline-helper {
+    display: inline-block;
+    height: 100%;
+}
 html,
 body {
     height: 100%;
@@ -8,9 +22,21 @@ body {
     font-size: 14px;
 }
 
-.column,
-.columns:first-child,
-.columns:last-child {
-    padding: 0;
-    margin: 0;
+.custom-scroll {
+    overflow: auto;
+}
+
+.custom-scroll::-webkit-scrollbar {
+    width: 3.5px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    opacity: 0.26;
+    border-radius: 1px;
+    background-color: #d8d8d8;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    border-radius: 1px;
+    background-color: #00e0a9;
 }

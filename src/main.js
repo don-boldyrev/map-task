@@ -2,7 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 import store from './store'
 import '@/assets/css/muller-font.css'
-import 'bulma/css/bulma.min.css'
+import 'normalize.css/normalize.css'
 import '@/assets/css/icon-classes.css'
 import '@/assets/css/main.css'
 
